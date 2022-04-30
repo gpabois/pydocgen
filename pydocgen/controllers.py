@@ -9,7 +9,7 @@ from .files  import store
 import uuid
 
 from urllib.parse import urlparse, urljoin
-from flask import render_template, redirect, request, url_for, abort
+from flask import render_template, redirect, request, url_for, abort, send_file
 
 def is_safe_url(target):
     ref_url = urlparse(request.host_url)
@@ -95,6 +95,22 @@ def init_app(app):
     @app.route('/inspections/<int:id>', methods=['GET'])
     def show_inspection(id):
         return render_template('show_inspection.html', inspection=inspections.query.get(id))
+
+    @app.route('/inspections/<int:id>/rapport/generate', methods=['GET'])
+    def generate_inspection_rapport(id):
+        from . import docgen
+
+        inspection = inspections.query.get(id)
+        stream = docgen.generate_rapport_inspection(inspection)
+
+        file_name = "{}_{}_{}_{}.odt".format(
+            inspection.date.strftime("%Y%m%d"),
+            inspection.aiot.commune,
+            inspection.aiot.nom,
+            "Rapport_inspection"
+        )
+        return send_file(stream, download_name=file_name, mimetype='application/vnd.oasis.opendocument.text')
+
 
     @app.route('/inspections/<int:id>/delete', methods=['GET'])
     def delete_inspection(id):
