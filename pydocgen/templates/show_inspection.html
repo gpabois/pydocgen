@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="content container">
+    <h1>{{inspection.nom}} du {{inspection.date.strftime("%d/%m/%Y")}} de {{inspection.aiot.nom}}</h1>
+    <a href={{url_for('create_insp_controle', inspection_id=inspection.id)}} class="button">Créer point de contrôle</a>
+
+    {% if inspection.controles %}
+    {% for controle in inspection.controles %}
+    <hr/>
+    <h2>Article {{controle.article_source}} - {{ controle.source }}{% if controle.date_source.strftime("%d/%m/%Y") %} du {{controle.date_source}}{% endif %}</h2>
+    <a href={{url_for("edit_insp_controle", id=controle.id)}}>Modifier</a>
+    <a href={{url_for("delete_insp_controle", id=controle.id)}}>Supprimer</a>
+    <h3>Prescription</h3>
+    <p>{{ controle.prescription }}</p>
+    <h3>Constats</h3>
+    <p>{{ controle.constats | replace('\n', '<br>') | safe }}</p>
+    {% endfor %}
+    {% endif %}
+</div>
+{% endblock %}

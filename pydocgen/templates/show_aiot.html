@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="content container">
+    <h1>{{aiot.nom}}</h1>
+    <h2>Inspections</h2>
+    {% if aiot.inspections %}
+    <table class="table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Nom</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for inspection in aiot.inspections %}
+            <tr>
+                <td>{{ inspection.id }}</td>
+                <td><a href={{url_for("show_inspection", id=inspection.id)}}>{{ inspection.nom }}</a></td>
+                <td>{{ inspection.date.strftime('%Y-%m-%d') }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+</div>
+{% endblock %}

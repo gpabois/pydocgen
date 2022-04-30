@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="content container">
+    <h1 class="header">AIOTS</h1>
+    {% if aiots %}
+    <table class="table">
+        <thead>
+            <tr>
+                <th>
+                    #
+                </th>
+                <th>
+                    Nom
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for aiot in aiots %}
+            <tr>
+                <td>{{ aiot.id }}</td>
+                <td><a href="{{url_for('show_aiot', id=aiot.id)}}">{{ aiot.nom }}</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+</div>
+{% endblock %}
