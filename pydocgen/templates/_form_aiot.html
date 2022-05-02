@@ -1,0 +1,15 @@
+{% from "_form_helpers.html" import render_field %}
+
+{% macro render_form(form) %}
+{{ form.csrf_token }}
+{{ render_field(form.nom) }}
+{{ render_field(form.numero_voie) }}
+{{ render_field(form.voie) }}
+{{ render_field(form.code_postal) }}
+{{ render_field(form.commune) }}
+{{ render_field(form.email) }}
+{{ render_field(form.code) }}
+{{ render_field(form.regime) }}
+{{ render_field(form.ied) }}
+{{ render_field(form.synthese) }}
+{% endmacro %}

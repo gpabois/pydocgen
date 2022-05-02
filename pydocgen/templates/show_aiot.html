@@ -3,7 +3,32 @@
 {% block content %}
 <div class="content container">
     <h1>{{aiot.nom}}</h1>
+    <a href={{url_for('edit_aiot', id=aiot.id)}}>Modifier</a>
+
+    <table class="table">
+        <tr>
+            <td>Code AIOT</td>
+            <td>{{ aiot.code }}</td>
+        </tr>
+        <tr>
+            <td>Correspondance</td>
+            <td>{{ aiot.email }}</td>
+        </tr>
+        <tr>
+            <td>Régime</td>
+            <td>{{ aiot.regime }}</td>
+        </tr>
+        <tr>
+            <td>IED</td>
+            <td>{{ aiot.ied }}</td>
+        </tr>
+    </table>
+    <p>
+        {{ aiot.synthese | nl2br }}
+    </p>
     <h2>Inspections</h2>
+    <a href={{url_for('create_inspection', aiot_id=aiot.id)}}>Créer inspection</a>
+
     {% if aiot.inspections %}
     <table class="table">
         <thead>

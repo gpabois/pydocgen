@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="content container">
+    {{user.nom}} {{user.prenom}} - {{user.email}}<br>
+    {{user.fonction | capitalize }}<br>
+    {{user.telephone}}
+</div>
+{% endblock %}

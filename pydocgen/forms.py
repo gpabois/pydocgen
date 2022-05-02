@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SelectField, DateField, TextAreaField
+from wtforms import StringField, PasswordField, SelectField, DateField, TextAreaField, BooleanField
 from wtforms.validators import InputRequired, Optional, EqualTo, Length, Email
 
 from .models import aiots, users
@@ -26,21 +26,43 @@ class RegisterUserForm(FlaskForm):
     password = PasswordField('password', validators=[InputRequired(), Length(min=4), EqualTo('confirm_password')])
     confirm_password = PasswordField('confirm_password', validators=[Length(min=4)])
 
+class CreateUserForm(FlaskForm):
+    nom = StringField('nom')
+    prenom = StringField('prenom')
+    fonction = StringField('fonction')
+    telephone = StringField('telephone')
+    reference = StringField('reference')
+    email = StringField('email', validators=[InputRequired(), Email()])
+
 class CreateAiotForm(FlaskForm):
     nom = StringField('nom', validators=[InputRequired()])
     numero_voie = StringField('numero_voie', validators=[Optional()])
     voie = StringField('voie', validators=[Optional()])
     code_postal = StringField('code_postal', validators=[Optional()])
     commune = StringField('commune', validators=[InputRequired()])
+    email = StringField("email", validators=[Optional(), Email()])
+    regime = SelectField("regime", choices=["Autorisation", "Enregistrement", "Déclaration"])
+    ied = BooleanField("ied")
+    code = StringField("code")
+    synthese = TextAreaField("synthese")
+
+EditAiotForm = CreateAiotForm
 
 class CreateInspectionForm(FlaskForm):
     nom = StringField('nom', validators=[InputRequired()])
     date = DateField ('date', validators=[InputRequired()])
     aiot_id = SelectField('aiot', coerce=int, validators=[InputRequired()])
+    redacteur_id = SelectField('redacteur', coerce=int, validators=[InputRequired()])
+    verificateur_id = SelectField('verificateur', coerce=int, validators=[InputRequired()])
+    approbateur_id = SelectField('approbateur', coerce=int, validate_choice=[InputRequired()])
 
-UpdateInspectionForm = CreateInspectionForm
+    contexte = TextAreaField("contexte")
+    themes = TextAreaField("themes")
+    
+EditInspectionForm = CreateInspectionForm
 
 class CreateControleInspForm(FlaskForm):
+    nom = StringField("nom")
     source = SelectField('source', choices=['Arrêté préfectoral'], validators=[InputRequired()])
     date_source = DateField('date_source', validators=[Optional()])
     article_source = StringField('article_source', validators=[InputRequired()])
@@ -50,3 +72,8 @@ class CreateControleInspForm(FlaskForm):
     constats = TextAreaField('constats', validators=[InputRequired()])
 
 EditControleInspForm = CreateControleInspForm
+
+class CreateDemandeExploitant(FlaskForm):
+    delai = StringField('délai', validators=[InputRequired()])
+    unite_delai = SelectField('unité_délai', choices=["jours", "mois"], validators=[InputRequired()])
+    contenu = TextAreaField("contenu")

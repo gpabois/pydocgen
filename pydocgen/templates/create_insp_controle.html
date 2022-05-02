@@ -1,17 +1,10 @@
 {% extends "base.html" %}
 {% from "_form_helpers.html" import render_field %}
-
+{% from "_form_insp_controle.html" import render_form %}
 {% block content %}
 <div class="container">
   <form method=post>
-      {{ form.csrf_token }}
-      {{ render_field(form.source) }}
-      {{ render_field(form.date_source) }}
-      {{ render_field(form.article_source) }}
-      {{ render_field(form.theme) }}
-      {{ render_field(form.sous_theme) }}
-      {{ render_field(form.prescription) }}
-      {{ render_field(form.constats)}}
+      {{ render_form(form) }}
     <input type=submit class="button is-primary" value="Créer">
   </form>
 </div>

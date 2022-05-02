@@ -6,6 +6,7 @@ from flask import Flask
 def create_app(test_config=None):
     from .models import db, migrate
     from .auth import login_manager
+    from .admin import admin
     from . import controllers
     
     app = Flask(__name__, instance_relative_config=True)
@@ -14,6 +15,7 @@ def create_app(test_config=None):
         SQLALCHEMY_DATABASE_URI="sqlite:///" + os.path.join(app.instance_path, 'database.sqlite'),
         SQLALCHEMY_TRACK_MODIFICATIONS=False
     )
+
 
     if test_config is None:
         # load the instance config, if it exists, when not testing
@@ -32,6 +34,8 @@ def create_app(test_config=None):
     
     login_manager.init_app(app)
     controllers.init_app(app)
+    
+    admin.init_app(app)
 
     return app
     

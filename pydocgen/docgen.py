@@ -1,75 +1,64 @@
 import io
-from odf.opendocument import OpenDocumentText
-from odf.style import Style, TextProperties
-from odf.text import H, P, Span
-from odf.table import Table, TableRow, TableCell, TableColumn
+import os
 
-def _generate_first_page_header(doc: OpenDocumentText):
-    doc.text.addElement(
-        table(
-            tcol(
-                trow(
-                    tcell(
-                        p(text="Logo")
-                    )
-                )                
-            ),
-            tcol(
-                trow(
-                    tcell(
-                        p(text="Organisation")
-                    )
-                )
-            )
-        )
+from secretary import Renderer, UndefinedSilently, pad_string
+from flask import current_app
+
+from jinja2 import Environment
+from markupsafe import Markup
+
+def finalize_value(value):
+    if isinstance(value, Markup):
+            return value
+
+    # get_escaped_var_value is a static method.
+    return Markup(Renderer.get_escaped_var_value(value))
+
+def odt_engine():
+    environment = Environment(undefined=UndefinedSilently,
+                                            autoescape=True,
+                                            finalize=finalize_value)
+    
+    environment.filters['pad'] = pad_string
+    environment.globals['SafeValue'] = Markup
+    environment.globals['enumerate'] = enumerate
+
+    engine = Renderer(environment)
+    return engine
+
+def generate_inspection_be_exploitant(inspection):
+    stream = io.BytesIO()
+       
+    engine = odt_engine()
+
+    tpl = os.path.join(current_app.instance_path, "modeles", "insp_be_exploitant.odt")
+    doc = engine.render(tpl, 
+        inspection=inspection, 
+        redacteur=inspection.redacteur, 
+        signataire=inspection.verificateur, 
+        aiot=inspection.aiot
     )
 
-def _add(node, children):
-    for child in children:
-        node.addElement(child)
+    stream.write(doc)
 
-def p(*children, **kwargs):
-    p = P(**kwargs)
-    _add(p, children)
-    return p
+    stream.seek(0)
+    return stream
 
-def h(*children, **kwargs):
-    h = H(**kwargs)
-    _add(h, children)
-    return h
-
-def span(*children, **kwargs):
-    span = Span(**kwargs)
-    _add(span, children)
-    return span
-
-def tcol(*children):
-    tcol = TableColumn()
-    _add(tcol, children)
-    return tcol
-
-def tcell(*children):
-    tcell = TableCell()
-    _add(tcell, children)
-    return tcell
-
-def trow(*children):
-    trow = TableRow()
-    _add(trow, children)
-    return trow
-
-def table(*children):
-    table = Table()
-    _add(table, children)
-    return table
-
-
-def generate_rapport_inspection(inspection):
+def generate_inspection_rapport(inspection):
     stream = io.BytesIO()
-    doc = OpenDocumentText()
+       
+    engine = odt_engine()
 
-    _generate_first_page_header(doc)
+    tpl = os.path.join(current_app.instance_path, "modeles", "insp_rapport.odt")
+    doc = engine.render(tpl, 
+        inspection=inspection, 
+        redacteur=inspection.redacteur, 
+        verificateur=inspection.verificateur, 
+        approbateur=inspection.approbateur,
+        aiot=inspection.aiot
+    )
 
-    doc.write(stream)
+    stream.write(doc)
+
     stream.seek(0)
     return stream

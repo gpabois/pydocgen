@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% from "_form_helpers.html" import render_field %}
+
+{% block content %}
+<div class="container">
+  <form method=post>
+      {{ form.csrf_token }}
+      {{ render_field(form.nom) }}
+      {{ render_field(form.prenom) }}
+      {{ render_field(form.email) }}
+      {{ render_field(form.fonction) }}
+      {{ render_field(form.telephone) }}
+      {{ render_field(form.reference) }}
+    <input type=submit class="button is-primary" value="Créer">
+  </form>
+</div>
+{% endblock %}

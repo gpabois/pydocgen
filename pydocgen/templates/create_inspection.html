@@ -1,13 +1,11 @@
 {% extends "base.html" %}
 {% from "_form_helpers.html" import render_field %}
+{% from "_form_inspection.html" import render_form %}
 
 {% block content %}
 <div class="container">
   <form method=post>
-      {{ form.csrf_token }}
-      {{ render_field(form.nom) }}
-      {{ render_field(form.date) }}
-      {{ render_field(form.aiot_id) }}
+    {{ render_form(form) }}
     <input type=submit class="button is-primary" value="Créer">
   </form>
 </div>

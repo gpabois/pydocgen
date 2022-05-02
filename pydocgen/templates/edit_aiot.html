@@ -1,12 +1,11 @@
 {% extends "base.html" %}
-{% from "_form_helpers.html" import render_field %}
 {% from "_form_aiot.html" import render_form %}
 
 {% block content %}
 <div class="container">
   <form method=post>
     {{ render_form(form) }}
-    <input type=submit class="button is-primary" value="Créer">
+    <input type=submit class="button is-primary" value="Modifier">
   </form>
 </div>
 {% endblock %}

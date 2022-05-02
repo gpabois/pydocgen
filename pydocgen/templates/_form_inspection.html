@@ -1,0 +1,13 @@
+{% from "_form_helpers.html" import render_field %}
+
+{% macro render_form(form) %}
+{{ form.csrf_token }}
+{{ render_field(form.nom) }}
+{{ render_field(form.date) }}
+{{ render_field(form.aiot_id) }}
+{{ render_field(form.redacteur_id) }}
+{{ render_field(form.verificateur_id) }}
+{{ render_field(form.approbateur_id) }}
+{{ render_field(form.contexte) }}
+{{ render_field(form.themes) }}
+{% endmacro %}
