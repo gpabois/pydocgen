@@ -3,10 +3,9 @@
 {% block content %}
 <div class="fr-container">
     <h1>{{inspection.nom}} du {{inspection.date.strftime("%d/%m/%Y")}} de {{inspection.aiot.nom}}</h1>
-    <a href={{url_for('create_insp_controle', inspection_id=inspection.id)}}>Créer point de contrôle</a>
-    <a href={{url_for('edit_inspection', id=inspection.id)}}>Modifier</a>
-    <a href={{url_for('generate_inspection_be_exploitant', id=inspection.id)}}>Générer BE Exploitant</a>
-    <a href={{url_for('generate_inspection_rapport', id=inspection.id)}}>Générer rapport</a>
+    <a class=fr-btn href={{url_for('edit_inspection', id=inspection.id)}}>Modifier</a>
+    <a class=fr-btn href={{url_for('generate_inspection_be_exploitant', id=inspection.id)}}>Générer BE Exploitant</a>
+    <a class=fr-btn href={{url_for('generate_inspection_rapport', id=inspection.id)}}>Générer rapport</a>
     
     <div class="fr-table">
         <table>

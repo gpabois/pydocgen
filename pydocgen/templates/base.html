@@ -15,18 +15,32 @@
 </head>
 
 <body>
-    <nav class="navbar">
-        <div class="container">
-
-            <div id="navbarMenuHeroA" class="navbar-menu">
-                <div class="navbar-end">
-                    <a href="{{ url_for('index') }}" class="navbar-item">
-                        Home
-                    </a>
+    <header role="banner" class="fr-header">
+        <div class="fr-header__body">
+            <div class="fr-container">
+                <div class="fr-header__body-row">
+                    <div class="fr-header__brand fr-enlarge-link">
+                        <div class="fr-header__brand-top">
+                            <div class="fr-header__logo">
+                                <a href="/" title="Accueil - DRIEAT-IF">
+                                    <p class="fr-logo">
+                                        TBD<br>
+                                    </p>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="fr-header__service">
+                            <a href="/" title="Accueil - [À MODIFIER | Nom du site / service]">
+                              <p class="fr-header__service-title">GenDoc</p>
+                            </a>
+                            <p class="fr-header__service-tagline">Outils de génération de documents</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-    </nav>
+    </header>
+    <br>
 
     {% block content %}
     {% endblock %}
