@@ -70,6 +70,9 @@ class inspections(db.Model):
     contexte = db.Column(db.Text)
     themes = db.Column(db.Text)
 
+    synthese_proposition = db.Column(db.Text)
+    synthese_constats = db.Column(db.Text)
+
     redacteur_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     redacteur = db.relationship('users', foreign_keys=[redacteur_id])
     
@@ -78,6 +81,9 @@ class inspections(db.Model):
     
     approbateur_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     approbateur = db.relationship('users', foreign_keys=[approbateur_id])
+
+    signataire_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    signataire = db.relationship('users', foreign_keys=[signataire_id])
 
     def __repr__(self):
         return '<Inspection %r>' % self.nom

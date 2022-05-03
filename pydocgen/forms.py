@@ -55,6 +55,9 @@ class CreateInspectionForm(FlaskForm):
     redacteur_id = SelectField('redacteur', coerce=int, validators=[InputRequired()])
     verificateur_id = SelectField('verificateur', coerce=int, validators=[InputRequired()])
     approbateur_id = SelectField('approbateur', coerce=int, validate_choice=[InputRequired()])
+    signataire_id = SelectField('signataire', coerce=int, validate_choice=[InputRequired()])
+    synthese_proposition = TextAreaField("Synthèse des propositions")
+    synthese_constats = TextAreaField("Synthèse des constats")
 
     contexte = TextAreaField("contexte")
     themes = TextAreaField("themes")
@@ -69,11 +72,22 @@ class CreateControleInspForm(FlaskForm):
     theme = StringField("theme", validators=[InputRequired()])
     sous_theme = StringField("sous_theme", validators=[InputRequired()])
     prescription = TextAreaField('prescription', validators=[InputRequired()])
-    constats = TextAreaField('constats', validators=[InputRequired()])
+    constats = TextAreaField('constats', validators=[Optional()])
 
 EditControleInspForm = CreateControleInspForm
 
 class CreateDemandeExploitant(FlaskForm):
-    delai = StringField('délai', validators=[InputRequired()])
+    delai       = StringField('délai', validators=[InputRequired()])
     unite_delai = SelectField('unité_délai', choices=["jours", "mois"], validators=[InputRequired()])
-    contenu = TextAreaField("contenu")
+    contenu     = TextAreaField("contenu")
+
+class ReponseAvisPCForm(FlaskForm):
+    date_envoi = DateField("Date d'envoi")
+    date_reception = DateField("Date réception")
+    date_depot = DateField("Date du dépôt")
+    reference_pc = StringField("Référence du PC")
+    synthese_projet = TextAreaField("Synthèse du projet")
+    ancienne_icpe = TextAreaField("Ancienne ICPE (laisser vide si pas applicable)")
+    status_pj = SelectField("Status des éléments fournis", choices=["pas_applicable", "absent", "irregulier", "conforme"])
+    explication_status_pj = TextAreaField("Explication")
+    avis = SelectField("Avis", choices=["defavorable", "favorable"])

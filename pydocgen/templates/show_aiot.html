@@ -1,53 +1,62 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="content container">
-    <h1>{{aiot.nom}}</h1>
-    <a href={{url_for('edit_aiot', id=aiot.id)}}>Modifier</a>
+<div class="fr-container">
+    <div class="fr-grid-row fr-grid-row--middle">
+        <div class="fr-col"><h1>{{aiot.nom}}</h1></div>
+        <div class="fr-col"><a href={{url_for('edit_aiot', id=aiot.id)}}>Modifier</a></div>
+    </div>
 
-    <table class="table">
-        <tr>
-            <td>Code AIOT</td>
-            <td>{{ aiot.code }}</td>
-        </tr>
-        <tr>
-            <td>Correspondance</td>
-            <td>{{ aiot.email }}</td>
-        </tr>
-        <tr>
-            <td>Régime</td>
-            <td>{{ aiot.regime }}</td>
-        </tr>
-        <tr>
-            <td>IED</td>
-            <td>{{ aiot.ied }}</td>
-        </tr>
-    </table>
+    <div class="fr-table fr-table--no-scroll">
+        <table class="table">
+            <tr>
+                <td>Code AIOT</td>
+                <td>{{ aiot.code }}</td>
+            </tr>
+            <tr>
+                <td>Correspondance</td>
+                <td>{{ aiot.email }}</td>
+            </tr>
+            <tr>
+                <td>Régime</td>
+                <td>{{ aiot.regime }}</td>
+            </tr>
+            <tr>
+                <td>IED</td>
+                <td>{{ aiot.ied }}</td>
+            </tr>
+        </table>
+    </div>
+    <h2>Synthèse</h2>
     <p>
         {{ aiot.synthese | nl2br }}
     </p>
-    <h2>Inspections</h2>
-    <a href={{url_for('create_inspection', aiot_id=aiot.id)}}>Créer inspection</a>
 
+    <div class="fr-grid-row fr-grid-row--middle">
+        <div class="fr-col"><h2>Inspections</h2></div>
+        <div class="fr-col"><a href={{url_for('create_inspection', aiot_id=aiot.id)}}>Créer</a></div>
+    </div>
     {% if aiot.inspections %}
-    <table class="table">
-        <thead>
-            <tr>
-                <th>#</th>
-                <th>Nom</th>
-                <th>Date</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for inspection in aiot.inspections %}
-            <tr>
-                <td>{{ inspection.id }}</td>
-                <td><a href={{url_for("show_inspection", id=inspection.id)}}>{{ inspection.nom }}</a></td>
-                <td>{{ inspection.date.strftime('%Y-%m-%d') }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <div class="fr-table fr-table--no-scroll">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Nom</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for inspection in aiot.inspections %}
+                <tr>
+                    <td>{{ inspection.id }}</td>
+                    <td><a href={{url_for("show_inspection", id=inspection.id)}}>{{ inspection.nom }}</a></td>
+                    <td>{{ inspection.date.strftime('%Y-%m-%d') }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
     {% endif %}
 </div>
 {% endblock %}

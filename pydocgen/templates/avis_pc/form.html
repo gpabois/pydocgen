@@ -1,0 +1,19 @@
+{% from "_form_helpers.html" import render_field %}
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <form method=post>
+        {{ form.csrf_token }}
+      {{ render_field(form.date_envoi )}}
+      {{ render_field(form.date_reception) }}
+      {{ render_field(form.date_depot) }}
+      {{ render_field(form.reference_pc) }}
+      {{ render_field(form.synthese_projet) }}
+      {{ render_field(form.ancienne_icpe) }}
+      {{ render_field(form.status_pj)}}
+      {{ render_field(form.explication_status_pj)}}
+      {{ render_field(form.avis) }}
+      <input type=submit class="button is-primary" value="Créer">
+    </form>
+  </div>
+{% endblock %}

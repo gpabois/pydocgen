@@ -4,6 +4,7 @@ from flask_login import login_user, login_required, logout_user, current_user
 from .forms  import LoginForm, RegisterUserForm, CreateAiotForm, CreateInspectionForm, CreateControleInspForm
 from .forms  import CreateUserForm, CreateDemandeExploitant
 from .forms  import EditInspectionForm, EditControleInspForm, EditAiotForm
+from .forms import ReponseAvisPCForm
 from .models import db, users, aiots, inspections, insp_controles, insp_controles_demandes_exploitant
 from .models import demandes_exploitant
 from .files  import store
@@ -37,7 +38,7 @@ def init_app(app):
 
     @app.route('/', methods=['GET'])
     def index():
-        return render_template('index.html')
+        return redirect(url_for("list_aiots"))
 
     @app.route('/users/register', methods=['GET', 'POST'])
     def register_user():
@@ -140,7 +141,7 @@ def init_app(app):
         form = EditInspectionForm(obj=inspection)
         
         form.aiot_id.choices = list(map(lambda aiot: (aiot.id, aiot.nom), aiots.query.all()))
-        form.approbateur_id.choices = form.verificateur_id.choices = form.redacteur_id.choices = list(map(lambda user: (user.id, user.fullname()), users.query.all()))
+        form.signataire_id.choices = form.approbateur_id.choices = form.verificateur_id.choices = form.redacteur_id.choices = list(map(lambda user: (user.id, user.fullname()), users.query.all()))
         
         if form.validate_on_submit():
             form.populate_obj(inspection)
@@ -156,7 +157,7 @@ def init_app(app):
         
         form.aiot_id.choices = list(map(lambda aiot: (aiot.id, aiot.nom), aiots.query.all()))
         form.aiot_id.data = aiot_id
-        form.approbateur_id.choices = form.verificateur_id.choices = form.redacteur_id.choices = list(map(lambda user: (user.id, user.fullname()), users.query.all()))
+        form.signataire_id.choices = form.approbateur_id.choices = form.verificateur_id.choices = form.redacteur_id.choices = list(map(lambda user: (user.id, user.fullname()), users.query.all()))
         
         if form.validate_on_submit():
             inspection = inspections()
@@ -169,7 +170,8 @@ def init_app(app):
 
     @app.route('/inspections/<int:id>', methods=['GET'])
     def show_inspection(id):
-        return render_template('show_inspection.html', inspection=inspections.query.get(id))
+        inspection = inspections.query.get(id)
+        return render_template('show_inspection.html', inspection=inspection, aiot=inspection.aiot)
 
     @app.route('/inspections/<int:id>/be/exploitant/generate', methods=['GET'])
     def generate_inspection_be_exploitant(id):
@@ -278,3 +280,19 @@ def init_app(app):
             return abort(400)
 
         return redirect(next or url_for('index'))
+
+    @app.route('/demandes/avis_pc', methods=['GET', 'POST'])
+    def demande_avis_pc():
+        from . import docgen
+        form = ReponseAvisPCForm()
+
+        if form.validate():
+            args = {}
+            for field in form:
+                args[field.name] = field.data
+
+            stream = docgen.generate_reponse_avis_pc(**args)
+            file_name = "Avis_PC_{}.odt".format(args['reference_pc'])
+            return send_file(stream, download_name=file_name, mimetype='application/vnd.oasis.opendocument.text')
+
+        return render_template("avis_pc/form.html", form=form)

@@ -1,5 +1,5 @@
 {% macro render_field(field) %}
-<div class="field">
+<div class="fr-input-group {% if field.errors %}fr-input-group--error{% endif %}">
   {% if field.type == "BooleanField" %}
   <div class="control">
     <label class="checkbox">
@@ -8,14 +8,14 @@
     </label>
   </div>
   {% else %}
-  <label class="label">{{ field.label.text }}</label>
+  
+  <label class="fr-label">{{ field.label.text }}</label>
   <div class="control">
-  {{ field(class="input", **kwargs) | safe }}
+  {{ field(class="fr-input {% if field.errors %}fr-input-group--error{% endif %}" , **kwargs) | safe }}
   </div>
   {% endif %}
   {% for error in field.errors %}
-    <p class="help is-danger">{{ error }}</p>
+    <p id="text-input-error-desc-error" class="fr-error-text">{{ error }}</p>
   {% endfor %}
-  </dd>
 </div>
 {% endmacro %}

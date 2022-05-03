@@ -2,29 +2,34 @@
 
 {% block content %}
 
-<div class="content container">
+<div class="fr-container">
     <h1 class="header">AIOTS</h1>
+    <p>
+        <a href="{{url_for('create_aiot')}}" class="fr-btn">Ajouter</a>
+    </p>
     {% if aiots %}
-    <table class="table">
-        <thead>
-            <tr>
-                <th>
-                    #
-                </th>
-                <th>
-                    Nom
-                </th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for aiot in aiots %}
-            <tr>
-                <td>{{ aiot.id }}</td>
-                <td><a href="{{url_for('show_aiot', id=aiot.id)}}">{{ aiot.nom }}</a></td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+        <div class="fr-table">
+            <table class="table">
+            <thead>
+                <tr>
+                    <th>
+                        #
+                    </th>
+                    <th>
+                        Nom
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for aiot in aiots %}
+                <tr>
+                    <td>{{ aiot.id }}</td>
+                    <td><a href="{{url_for('show_aiot', id=aiot.id)}}">{{ aiot.nom }}</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
     {% endif %}
 </div>
 {% endblock %}

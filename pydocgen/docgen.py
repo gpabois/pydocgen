@@ -26,6 +26,19 @@ def odt_engine():
     engine = Renderer(environment)
     return engine
 
+def generate_reponse_avis_pc(**kwargs):
+    stream = io.BytesIO()
+       
+    engine = odt_engine()
+
+    tpl = os.path.join(current_app.instance_path, "modeles", "avis_pc_mail.odt")
+    
+    doc = engine.render(tpl, **kwargs)
+
+    stream.write(doc)
+    stream.seek(0)
+    return stream    
+
 def generate_inspection_be_exploitant(inspection):
     stream = io.BytesIO()
        
@@ -35,7 +48,7 @@ def generate_inspection_be_exploitant(inspection):
     doc = engine.render(tpl, 
         inspection=inspection, 
         redacteur=inspection.redacteur, 
-        signataire=inspection.verificateur, 
+        signataire=inspection.signataire, 
         aiot=inspection.aiot
     )
 
