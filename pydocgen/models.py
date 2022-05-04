@@ -54,12 +54,85 @@ class aiots(db.Model):
         self.code_postal = code_postal
         self.commune = commune
     
+    def formatted_voie(self):
+        return self.fullvoie()
+
     def fullvoie(self):
         if self.numero_voie:
             return "{} {}".format(self.numero_voie, self.voie)
         else:
             return self.voie
-        
+
+class arretes(db.Model):
+    id = db.Column('id', db.Integer, primary_key = True)
+    aiot_id = db.Column(db.Integer, db.ForeignKey('aiots.id', ondelete='CASCADE'), nullable=False)
+    aiot = db.relationship('aiots', backref=db.backref('arretes', lazy=True))
+
+    nature = db.Column(db.String(255))
+    
+    visas = db.Column(db.Text)
+    considerants = db.Column(db.Text)
+
+    def get_visas(self):
+        return self.visas.split(";;")
+    
+    def get_considerants(self):
+        return self.considerants.split(";;")
+
+    def get_titre(self):
+        return "portant réglementation complémentaire d'installation classées pour la protection de l'environnement exploitée " + \
+            "par la société {} sise {} à {}".format(aiot.nom, aiot.formatted_voie(), aiot.commune)
+
+class articles(db.Model):
+    id = db.Column('id', db.Integer, primary_key = True) 
+    order = db.Column(db.Integer)
+    arrete_id = db.Column(db.Integer, db.ForeignKey('arretes.id', ondelete='CASCADE'), nullable=False)
+    arrete = db.relationship('arretes', backref=db.backref('articles', lazy=True))
+
+    nom = db.Column(db.String(255))
+
+    def get_titre(self):
+        return "Article {}{}".format(order, ": {}".format(self.nom) if self.nom else "")
+
+    @lru_cache
+    def get_dispositions(self):
+        return list(chain(*[
+            dispositions_abrogatoires.query.filter_by(article_id=self.id).all(),
+            dispositions_autres.query.filter_by(article_id=self.id).all()
+        ]))
+
+    def get_contenu(self):
+        list(map(str, self.get_dispositions())).join("\n\n")
+
+class dispositions_autres(db.Model):
+    id = db.Column('id', db.Integer, primary_key = True)   
+    article_id = db.Column(db.Integer, db.ForeignKey('articles.id', ondelete='CASCADE'), nullable=False)
+
+    contenu = db.Column(db.Text)
+
+    def __str__(self):
+        return self.contenu
+
+class dispositions_abrogatoires(db.Model):
+    id = db.Column('id', db.Integer, primary_key = True) 
+    article_id = db.Column(db.Integer, db.ForeignKey('articles.id', ondelete='CASCADE'), nullable=False)
+    
+    nom_arrete = db.Column(db.String(255), nullable=False)
+    articles = db.Column(db.Text, nullable=True)
+
+    def __str__(self):
+        if self.articles:
+            "Les dispositions prévues aux articles {} de l'{} sont abrogées."
+        else:
+            "Les dispositions prévues de l'{} sont abrogées."
+
+class inspections_arretes_rel(db.Model):
+    id = db.Column('id', db.Integer, primary_key = True)
+    arrete_id = db.Column(db.Integer, db.ForeignKey('arretes.id', ondelete='CASCADE'), nullable=False)
+    arrete = db.relationship('inspections', backref=db.backref('arretes_rel', lazy=True))
+    inspection_id = db.Column(db.Integer, db.ForeignKey('inspections.id', ondelete='CASCADE'), nullable=False)
+    inspection = db.relationship('arretes', backref=db.backref('inspections_rel', lazy=True))
+
 class inspections(db.Model):
     id = db.Column('id', db.Integer, primary_key = True)
     aiot_id = db.Column(db.Integer, db.ForeignKey('aiots.id', ondelete='CASCADE'), nullable=False)

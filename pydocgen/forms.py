@@ -49,24 +49,24 @@ class CreateAiotForm(FlaskForm):
 EditAiotForm = CreateAiotForm
 
 class CreateInspectionForm(FlaskForm):
-    nom = StringField('nom', validators=[InputRequired()])
-    date = DateField ('date', validators=[InputRequired()])
-    aiot_id = SelectField('aiot', coerce=int, validators=[InputRequired()])
-    redacteur_id = SelectField('redacteur', coerce=int, validators=[InputRequired()])
-    verificateur_id = SelectField('verificateur', coerce=int, validators=[InputRequired()])
-    approbateur_id = SelectField('approbateur', coerce=int, validate_choice=[InputRequired()])
-    signataire_id = SelectField('signataire', coerce=int, validate_choice=[InputRequired()])
+    nom = StringField('Nom', validators=[InputRequired()])
+    date = DateField ('Date', validators=[InputRequired()])
+    aiot_id = SelectField('AIOT', coerce=int, validators=[InputRequired()])
+    redacteur_id = SelectField('Rédacteur', coerce=int, validators=[InputRequired()])
+    verificateur_id = SelectField('Vérificateur', coerce=int, validators=[InputRequired()])
+    approbateur_id = SelectField('Approbateur', coerce=int, validate_choice=[InputRequired()])
+    signataire_id = SelectField('Signataire correspondance', coerce=int, validate_choice=[InputRequired()])
     synthese_proposition = TextAreaField("Synthèse des propositions")
     synthese_constats = TextAreaField("Synthèse des constats")
 
-    contexte = TextAreaField("contexte")
-    themes = TextAreaField("themes")
+    contexte = TextAreaField("Contexte")
+    themes = TextAreaField("Thémes")
     
 EditInspectionForm = CreateInspectionForm
 
 class CreateControleInspForm(FlaskForm):
     nom = StringField("nom")
-    source = SelectField('source', choices=['Arrêté préfectoral'], validators=[InputRequired()])
+    source = SelectField('source', choices=['Arrêté préfectoral', 'Code de l\'environnement'], validators=[InputRequired()])
     date_source = DateField('date_source', validators=[Optional()])
     article_source = StringField('article_source', validators=[InputRequired()])
     theme = StringField("theme", validators=[InputRequired()])
@@ -91,3 +91,16 @@ class ReponseAvisPCForm(FlaskForm):
     status_pj = SelectField("Status des éléments fournis", choices=["pas_applicable", "absent", "irregulier", "conforme"])
     explication_status_pj = TextAreaField("Explication")
     avis = SelectField("Avis", choices=["defavorable", "favorable"])
+
+class ArreteForm(FlaskForm):
+    nature = SelectField("Nature", choices=[
+        ("complementaire", "Arrêté complémentaire"),
+        ("mesures_urgence", "Arrêté de mesures d'urgence")
+    ])
+
+    aiot_id = SelectField('AIOT', coerce=int, validators=[InputRequired()])
+    visas = TextAreaField('Visas (sans le VU)')
+    considerants = TextAreaField('Considérants (sans le CONSIDERANT)')
+
+CreateArreteForm = ArreteForm
+EditArreteForm = ArreteForm
