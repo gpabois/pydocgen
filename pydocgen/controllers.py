@@ -5,8 +5,13 @@ from .forms  import LoginForm, RegisterUserForm, CreateAiotForm, CreateInspectio
 from .forms  import CreateUserForm, CreateDemandeExploitant
 from .forms  import EditInspectionForm, EditControleInspForm, EditAiotForm
 from .forms import ReponseAvisPCForm
-from .models import db, users, aiots, inspections, insp_controles, insp_controles_demandes_exploitant
+from .forms import CreateArreteForm, EditArreteForm
+from .models import db, users, aiots
 from .models import demandes_exploitant
+
+from .models import inspections, insp_controles, insp_controles_demandes_exploitant
+from .models import arretes
+
 from .files  import store
 
 import uuid
@@ -56,7 +61,7 @@ def init_app(app):
         user = users.query.get(id)
         return render_template("show_user.html", user=user)
 
-    @app.route('/users/create', methods=['GET', 'POST'])
+    @app.route('/users/nouveau', methods=['GET', 'POST'])
     def create_user():
         form = CreateUserForm()
 
@@ -109,7 +114,7 @@ def init_app(app):
     def show_aiot(id):
         return render_template('show_aiot.html', aiot=aiots.query.get(id))
 
-    @app.route('/aiots/create', methods=['GET', 'POST'])
+    @app.route('/aiots/nouveau', methods=['GET', 'POST'])
     def create_aiot():
         form = CreateAiotForm()
         
@@ -151,7 +156,7 @@ def init_app(app):
 
         return render_template('edit_inspection.html', form=form)
 
-    @app.route('/aiots/<int:aiot_id>/inspections/create', methods=['GET', 'POST'])
+    @app.route('/aiots/<int:aiot_id>/inspections/nouveau', methods=['GET', 'POST'])
     def create_inspection(aiot_id):
         form = CreateInspectionForm()
         
@@ -211,7 +216,7 @@ def init_app(app):
         db.session.commit()
         return redirect(url_for('show_aiot', id=aiot_id))  
 
-    @app.route('/inspections/<int:inspection_id>/controles/create', methods=['GET', 'POST'])
+    @app.route('/inspections/<int:inspection_id>/controles/nouveau', methods=['GET', 'POST'])
     def create_insp_controle(inspection_id):
         form = CreateControleInspForm()
 
@@ -246,7 +251,7 @@ def init_app(app):
         db.session.commit()
         return redirect(url_for('show_inspection', id=insp_id))
 
-    @app.route('/inspections/controles/<int:ctrl_id>/demandes_exploitant/create', methods=['GET', 'POST'])
+    @app.route('/inspections/controles/<int:ctrl_id>/demandes_exploitant/nouveau', methods=['GET', 'POST'])
     def create_insp_ctrl_demande_exploitant(ctrl_id):
         form = CreateDemandeExploitant()
         ctrl = insp_controles.query.get(ctrl_id)
@@ -296,3 +301,7 @@ def init_app(app):
             return send_file(stream, download_name=file_name, mimetype='application/vnd.oasis.opendocument.text')
 
         return render_template("avis_pc/form.html", form=form)
+
+    @app.route('/aiots/<int:aiot_id>/arretes/nouveau', methods=['GET', 'POST'])
+    def create_arrete(aiot_id):
+        form = CreateArreteForm()
