@@ -1,0 +1,6 @@
+{% from "_form_helpers.html" import render_field %}
+
+{% macro render_form(form) %}
+{{ form.csrf_token }}
+{{ render_field(form.contenu) }}
+{% endmacro %}

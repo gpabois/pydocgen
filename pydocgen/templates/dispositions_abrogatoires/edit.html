@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% from "dispositions_abrogatoires/_form.html" import render_form %}
+
+{% block content %}
+<div class="fr-container">
+  <h1>Edition de la disposition abrogatoire</h1>
+  <form method=post>
+    {{ render_form(form) }}
+    <input type=submit class="fr-btn is-primary" value="Modifier">
+  </form>
+</div>
+{% endblock %}

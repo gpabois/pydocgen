@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="fr-container">
+  <h1>Arrêté</h2>
+  <h2>{{ arrete.get_titre() }}</h2>
+  <p>
+    <a class="fr-btn" href="{{url_for('edit_arrete', id=arrete.id)}}">Modifier</a>
+    <a class="fr-btn" href="{{url_for('generate_arrete', id=arrete.id)}}">Générer</a>
+  </p>
+
+
+  {% for visa in arrete.iter_visas() %}
+  <p>VU {{visa}} ;</p>
+  {% endfor %}
+
+  {% for considerant in arrete.iter_considerants() %}
+  <p>CONSIDERANT {{considerant}} ;</p>
+  {% endfor %}
+
+  ARRÊTE
+  <p><a class="fr-btn" href="{{url_for('create_article', arrete_id=arrete.id)}}">Ajouter article</a></p>
+
+  {% for article in arrete.articles %}
+  <h3>{{ article.get_titre() }}</h3>
+  <p>
+    <a class="fr-btn" href="{{url_for('edit_article', id=article.id)}}">Modifier</a>
+    <button class="fr-btn"  data-fr-opened="false" aria-controls='{{"fr-modal-article-{}".format(article.id)}}'>
+      Ajouter disposition
+    </button>
+    <dialog aria-labelledby="fr-modal-title-modal-1" role="dialog" id='{{"fr-modal-article-{}".format(article.id)}}' class="fr-modal">
+      <div class="fr-container fr-container--fluid fr-container-md">
+          <div class="fr-grid-row fr-grid-row--center">
+              <div class="fr-col-12 fr-col-md-8 fr-col-lg-6">
+                  <div class="fr-modal__body">
+                      <div class="fr-modal__header">
+                          <button class="fr-btn--close fr-btn" title="Fermer la fenêtre modale" aria-controls='{{"fr-modal-article-{}".format(article.id)}}'>Fermer</button>
+                      </div>
+                      <div class="fr-modal__content">
+                          <h1 id="fr-modal-title-modal-1" class="fr-modal__title"><span class="fr-fi-arrow-right-line fr-fi--lg" aria-hidden="true"></span>Quelle type de disposition ?</h1>
+                          <a class="fr-btn" href="{{url_for('create_disposition_abrogatoire', article_id=article.id)}}">Disposition abrogatoire</a>
+                          <a class="fr-btn" href="{{url_for('create_disposition_autre', article_id=article.id)}}">Autre disposition</a>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </div>
+  </dialog>
+  </p>
+
+  {% for type_disposition, disposition in article.get_dispositions() %}
+  <p>
+    {{ disposition | nl2br }}
+    <a href="{{url_for('edit_{}'.format(type_disposition), id=disposition.id)}}">[Modifier]</a>
+  </p>
+  {% endfor %}
+  {% endfor %}
+  
+  
+</div>
+{% endblock %}

@@ -1,0 +1,8 @@
+
+{% macro display_annexe(type, annexe) %}
+{% if type == "arrete" %}
+    <p>
+        <a href="{{url_for('show_arrete', id=annexe.id)}}">Arrêté {{ annexe.get_titre() }}</a>
+    </p>
+{% endif %}
+{% endmacro %}

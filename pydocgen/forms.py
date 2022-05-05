@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SelectField, DateField, TextAreaField, BooleanField
+from wtforms import StringField, PasswordField, SelectField, DateField, TextAreaField, BooleanField,IntegerField
 from wtforms.validators import InputRequired, Optional, EqualTo, Length, Email
 
 from .models import aiots, users
@@ -95,7 +95,8 @@ class ReponseAvisPCForm(FlaskForm):
 class ArreteForm(FlaskForm):
     nature = SelectField("Nature", choices=[
         ("complementaire", "Arrêté complémentaire"),
-        ("mesures_urgence", "Arrêté de mesures d'urgence")
+        ("mesures_urgence", "Arrêté de mesures d'urgence"),
+        ("levee_mesures_urgences", "Arrêté de levée de mesures d'urgences")
     ])
 
     aiot_id = SelectField('AIOT', coerce=int, validators=[InputRequired()])
@@ -104,3 +105,23 @@ class ArreteForm(FlaskForm):
 
 CreateArreteForm = ArreteForm
 EditArreteForm = ArreteForm
+
+class ArticleForm(FlaskForm):
+    order = IntegerField("Numéro")
+    nom = StringField("Nom (optionnel)")
+
+CreateArticleForm = ArticleForm
+EditArticleForm = ArticleForm
+
+class DispositionAbrogatoireForm(FlaskForm):
+    nom_arrete = StringField("Nom de l'arrêté")
+    articles = StringField("Articles à abroger (optionnel)")
+
+CreateDispositionAbrogatoireForm = DispositionAbrogatoireForm
+EditDispositionAbrogatoireForm = DispositionAbrogatoireForm
+
+class DispositionAutreForm(FlaskForm):
+    contenu = TextAreaField("Disposition")
+
+CreateDispositionAutreForm = DispositionAutreForm
+EditDispositionAutreForm = DispositionAutreForm

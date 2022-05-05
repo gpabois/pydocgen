@@ -5,12 +5,18 @@ from .forms  import LoginForm, RegisterUserForm, CreateAiotForm, CreateInspectio
 from .forms  import CreateUserForm, CreateDemandeExploitant
 from .forms  import EditInspectionForm, EditControleInspForm, EditAiotForm
 from .forms import ReponseAvisPCForm
-from .forms import CreateArreteForm, EditArreteForm
+
 from .models import db, users, aiots
 from .models import demandes_exploitant
 
-from .models import inspections, insp_controles, insp_controles_demandes_exploitant
-from .models import arretes
+from .models import inspections, controles, controles_demandes_exploitant_rels
+from .models import arretes, arretes_inspections_rels
+from .forms import CreateArreteForm, EditArreteForm
+from .models import articles
+from .forms  import CreateArticleForm, EditArticleForm
+from .models import dispositions_autres, dispositions_abrogatoires
+from .forms import CreateDispositionAbrogatoireForm, EditDispositionAbrogatoireForm
+from .forms import CreateDispositionAutreForm, EditDispositionAutreForm
 
 from .files  import store
 
@@ -108,11 +114,11 @@ def init_app(app):
 
     @app.route('/aiots', methods=['GET', 'POST'])
     def list_aiots():
-        return render_template('list_aiots.html', aiots=aiots.query.all())
+        return render_template('aiots/list.html', aiots=aiots.query.all())
 
     @app.route('/aiots/<int:id>', methods=['GET'])
     def show_aiot(id):
-        return render_template('show_aiot.html', aiot=aiots.query.get(id))
+        return render_template('aiots/show.html', aiot=aiots.query.get(id))
 
     @app.route('/aiots/nouveau', methods=['GET', 'POST'])
     def create_aiot():
@@ -125,7 +131,7 @@ def init_app(app):
 
             return redirect(url_for('show_aiot', id=aiot.id))
         
-        return render_template('create_aiot.html', form=form)  
+        return render_template('aiots/create.html', form=form)  
 
     @app.route('/aiots/<int:id>/edit', methods=['GET', 'POST'])    
     def edit_aiot(id):
@@ -138,7 +144,7 @@ def init_app(app):
             db.session.commit()
             return redirect(url_for('show_aiot', id=aiot.id))
 
-        return render_template('edit_aiot.html', form=form)
+        return render_template('aiots/edit.html', form=form)
 
     @app.route('/inspections/<int:id>/edit', methods=['GET', 'POST'])    
     def edit_inspection(id):
@@ -154,7 +160,7 @@ def init_app(app):
             db.session.commit()
             return redirect(url_for('show_inspection', id=inspection.id))
 
-        return render_template('edit_inspection.html', form=form)
+        return render_template('inspections/edit.html', form=form)
 
     @app.route('/aiots/<int:aiot_id>/inspections/nouveau', methods=['GET', 'POST'])
     def create_inspection(aiot_id):
@@ -171,12 +177,12 @@ def init_app(app):
             db.session.commit()
             return redirect(url_for('show_inspection', id=inspection.id))
 
-        return render_template('create_inspection.html', form=form)
+        return render_template('inspections/create.html', form=form)
 
     @app.route('/inspections/<int:id>', methods=['GET'])
     def show_inspection(id):
         inspection = inspections.query.get(id)
-        return render_template('show_inspection.html', inspection=inspection, aiot=inspection.aiot)
+        return render_template('inspections/show.html', inspection=inspection, aiot=inspection.aiot)
 
     @app.route('/inspections/<int:id>/be/exploitant/generate', methods=['GET'])
     def generate_inspection_be_exploitant(id):
@@ -217,22 +223,22 @@ def init_app(app):
         return redirect(url_for('show_aiot', id=aiot_id))  
 
     @app.route('/inspections/<int:inspection_id>/controles/nouveau', methods=['GET', 'POST'])
-    def create_insp_controle(inspection_id):
+    def create_controle(inspection_id):
         form = CreateControleInspForm()
 
         if form.validate_on_submit():
-            controle = insp_controles()
+            controle = controles()
             controle.insp_id = inspection_id
             form.populate_obj(controle)
             db.session.add(controle)
             db.session.commit()
             return redirect(url_for('show_inspection', id=inspection_id))
         
-        return render_template('create_insp_controle.html', form=form)
+        return render_template('controles/create.html', form=form)
 
     @app.route('/inspections/controles/<int:id>/edit', methods=['GET', 'POST'])
-    def edit_insp_controle(id):
-        controle = insp_controles.query.get(id)
+    def edit_controle(id):
+        controle = controles.query.get(id)
         form = EditControleInspForm(obj=controle)
         
         if form.validate_on_submit():
@@ -241,20 +247,19 @@ def init_app(app):
             db.session.commit()
             return redirect(url_for('show_inspection', id=controle.insp_id))
         
-        return render_template('edit_insp_controle.html', form=form)
+        return render_template('controles/edit.html', form=form)
 
     @app.route('/inspections/controles/<int:id>/delete', methods=['GET'])
-    def delete_insp_controle(id):
-        controle = insp_controles.query.get(id)
+    def delete_controle(id):
+        controle = controles.query.get(id)
         insp_id = controle.insp_id
         db.session.delete(controle)
         db.session.commit()
         return redirect(url_for('show_inspection', id=insp_id))
 
-    @app.route('/inspections/controles/<int:ctrl_id>/demandes_exploitant/nouveau', methods=['GET', 'POST'])
-    def create_insp_ctrl_demande_exploitant(ctrl_id):
+    @app.route('/demandes_exploitant/nouveau', methods=['GET', 'POST'])
+    def create_demande_exploitant():
         form = CreateDemandeExploitant()
-        ctrl = insp_controles.query.get(ctrl_id)
 
         if form.validate_on_submit():
             demande_exploitant = demandes_exploitant()
@@ -262,18 +267,26 @@ def init_app(app):
             db.session.add(demande_exploitant)
             db.session.flush()
             db.session.refresh(demande_exploitant)
-            db.session.add(
-                insp_controles_demandes_exploitant(
-                    ctrl_id,
-                    demande_exploitant.id
+            
+            if request.args.get('controle_id'):
+                controle_id = request.args.get('controle_id')
+                db.session.add(
+                    controles_demandes_exploitant_rels(
+                        controle_id,
+                        demande_exploitant.id
+                    )
                 )
-            )
+
             db.session.commit()
-            return redirect(url_for('show_inspection', id=ctrl.insp_id))
+            
+            next = request.args.get('next')
+            # is_safe_url should check if the url is safe for redirects.
+            if not is_safe_url(next):
+                return abort(400)
 
         return render_template("create_demande_exploitant.html", form=form)
     
-    @app.route('/demandes_exploitant/<int:id>', methods=['GET'])
+    @app.route('/demandes_exploitant/<int:id>/delete', methods=['GET'])
     def delete_demande_exploitant(id):
         demande = demandes_exploitant.query.get(id)
         db.session.delete(demande)
@@ -302,6 +315,161 @@ def init_app(app):
 
         return render_template("avis_pc/form.html", form=form)
 
+    @app.route('/arretes/<int:id>', methods=['GET', 'POST'])
+    def show_arrete(id):
+        arrete = arretes.query.get(id)
+        return render_template("arretes/show.html", arrete=arrete)        
+
+    @app.route('/arretes/<int:id>/generate', methods=['GET'])
+    def generate_arrete(id):
+        from . import docgen
+        from datetime import date
+
+        arrete = arretes.query.get(id)
+        stream = docgen.generate_arrete(arrete)
+
+        file_name = "{}_{}_{}_{}.odt".format(
+            date.today().strftime("%Y%m%d"),
+            arrete.aiot.commune,
+            arrete.aiot.nom,
+            "Arrete"
+        )
+
+        return send_file(stream, download_name=file_name, mimetype='application/vnd.oasis.opendocument.text')
+
     @app.route('/aiots/<int:aiot_id>/arretes/nouveau', methods=['GET', 'POST'])
     def create_arrete(aiot_id):
         form = CreateArreteForm()
+        
+        form.aiot_id.choices = list(map(lambda aiot: (aiot.id, aiot.nom), aiots.query.all()))
+        form.aiot_id.data = aiot_id
+
+        if form.validate_on_submit():
+            arrete = arretes()
+            form.populate_obj(arrete)
+            db.session.add(arrete)
+            db.session.flush()
+            db.session.refresh(arrete)
+
+            if request.args.get('inspection_id'):
+                inspection_id = request.args.get('inspection_id')
+                db.session.add(arretes_inspections_rels(arrete.id, inspection_id))
+
+            db.session.commit()
+
+            next = request.args.get('next')
+
+            if not is_safe_url(next):
+                return abort(400)
+
+            return redirect(next or url_for('show_arrete', arrete.id))
+
+        return render_template("arretes/create.html", form=form)
+
+    @app.route('/arretes/<int:id>/edit', methods=['GET', 'POST'])
+    def edit_arrete(id):
+        arrete = arretes.query.get(id)
+        form = EditArreteForm(obj=arrete)
+        
+        form.aiot_id.choices = list(map(lambda aiot: (aiot.id, aiot.nom), aiots.query.all()))
+        form.aiot_id.data = arrete.aiot_id
+        
+        if form.validate_on_submit():
+            form.populate_obj(arrete)
+            db.session.add(arrete)
+            db.session.commit()
+            return redirect(url_for('show_arrete', id=arrete.id))
+        
+        return render_template('arretes/edit.html', form=form)
+    
+
+
+    @app.route('/arretes/<int:arrete_id>/articles/nouveau', methods=['GET', 'POST'])
+    def create_article(arrete_id):
+        form = CreateArticleForm()
+        
+        if form.validate_on_submit():
+            article = articles()
+            article.arrete_id = arrete_id
+            form.populate_obj(article)
+            db.session.add(article)
+            db.session.commit()
+
+            return redirect(url_for('show_arrete', id=arrete_id))
+
+        return render_template("articles/create.html", form=form)
+
+    @app.route('/articles/<int:id>/edit', methods=['GET', 'POST'])
+    def edit_article(id):
+        article = articles.query.get(id)
+        form = EditArticleForm(obj=article)
+        
+        if form.validate_on_submit():
+            form.populate_obj(article)
+            db.session.add(article)
+            db.session.commit()
+            return redirect(url_for('show_arrete', id=article.arrete_id))
+        
+        return render_template('articles/edit.html', form=form)
+
+    @app.route('/articles/<int:article_id>/dispositions/abrogatoires/nouveau', methods=['GET', 'POST'])
+    def create_disposition_abrogatoire(article_id):
+        form = CreateDispositionAbrogatoireForm()
+        article = articles.query.get(article_id)
+
+        if form.validate_on_submit():
+            disposition = dispositions_abrogatoires()
+            disposition.article_id = article.id
+            form.populate_obj(disposition)
+            db.session.add(disposition)
+            db.session.commit()
+
+            return redirect(url_for('show_arrete', id=article.arrete_id))
+
+        return render_template("dispositions_abrogatoires/create.html", form=form)
+
+    @app.route('/dispositions/abrogatoires/<int:id>/edit', methods=['GET', 'POST'])
+    def edit_disposition_abrogatoire(id):
+        disposition = dispositions_abrogatoires.query.get(id)
+        article = articles.query.get(disposition.article_id)
+
+        form = EditDispositionAbrogatoireForm(obj=disposition)
+        
+        if form.validate_on_submit():
+            form.populate_obj(disposition)
+            db.session.add(disposition)
+            db.session.commit()
+            return redirect(url_for('show_arrete', id=article.arrete_id))
+        
+        return render_template('dispositions_abrogatoires/edit.html', form=form)
+
+    @app.route('/articles/<int:article_id>/dispositions/autres/nouveau', methods=['GET', 'POST'])
+    def create_disposition_autre(article_id):
+        form = CreateDispositionAutreForm()
+        article = articles.query.get(article_id)
+
+        if form.validate_on_submit():
+            disposition = dispositions_autres()
+            disposition.article_id = article.id
+            form.populate_obj(disposition)
+            db.session.add(disposition)
+            db.session.commit()
+
+            return redirect(url_for('show_arrete', id=article.arrete_id))
+
+        return render_template("dispositions_autres/create.html", form=form)
+
+    @app.route('/dispositions/autres/<int:id>/edit', methods=['GET', 'POST'])
+    def edit_disposition_autre(id):
+        disposition = dispositions_autres.query.get(id)
+        article = articles.query.get(disposition.article_id)
+
+        form = EditDispositionAutreForm(obj=disposition)
+        
+        if form.validate_on_submit():
+            form.populate_obj(disposition)
+            db.session.add(disposition)
+            db.session.commit()
+            return redirect(url_for('show_arrete', id=article.arrete_id))
+        
+        return render_template('dispositions_autres/edit.html', form=form)

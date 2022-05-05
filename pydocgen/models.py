@@ -63,6 +63,23 @@ class aiots(db.Model):
         else:
             return self.voie
 
+class arretes_inspections_rels(db.Model):
+    id = db.Column('id', db.Integer, primary_key = True)    
+    inspection_id = db.Column(db.Integer, db.ForeignKey('inspections.id', ondelete='CASCADE'), nullable=False)
+    inspection = db.relationship('inspections')
+
+    arrete_id = db.Column(db.Integer, db.ForeignKey('arretes.id', ondelete='CASCADE'), nullable=False)
+    arrete = db.relationship('arretes')
+
+    def __init__(self, arrete_id, inspection_id):
+        self.arrete_id = arrete_id
+        self.inspection_id = inspection_id
+
+    @staticmethod
+    def iter_by_inspection(inspection_id):
+        for rel in arretes_inspections_rels.query.filter_by(inspection_id=inspection_id).all():
+            yield rel.arrete
+
 class arretes(db.Model):
     id = db.Column('id', db.Integer, primary_key = True)
     aiot_id = db.Column(db.Integer, db.ForeignKey('aiots.id', ondelete='CASCADE'), nullable=False)
@@ -73,15 +90,20 @@ class arretes(db.Model):
     visas = db.Column(db.Text)
     considerants = db.Column(db.Text)
 
-    def get_visas(self):
-        return self.visas.split(";;")
+    def iter_visas(self):
+        return filter(lambda v: v, self.visas.split(";;"))
     
-    def get_considerants(self):
-        return self.considerants.split(";;")
+    def iter_considerants(self):
+        return filter(lambda c: c, self.considerants.split(";;"))
 
     def get_titre(self):
-        return "portant réglementation complémentaire d'installation classées pour la protection de l'environnement exploitée " + \
-            "par la société {} sise {} à {}".format(aiot.nom, aiot.formatted_voie(), aiot.commune)
+        aiot = self.aiot
+        if self.nature == "levee_mesures_urgences":
+            return "portant mainlevée des mesures d'urgence pour l'installation classées pour la protection de l'environnement exploitée " + \
+                "par la société {} sise {} à {}".format(aiot.nom, aiot.formatted_voie(), aiot.commune)       
+        else:
+            return "portant réglementation complémentaire de l'installation classée pour la protection de l'environnement exploitée " + \
+                "par la société {} sise {} à {}".format(aiot.nom, aiot.formatted_voie(), aiot.commune)
 
 class articles(db.Model):
     id = db.Column('id', db.Integer, primary_key = True) 
@@ -92,17 +114,20 @@ class articles(db.Model):
     nom = db.Column(db.String(255))
 
     def get_titre(self):
-        return "Article {}{}".format(order, ": {}".format(self.nom) if self.nom else "")
+        return "Article {}{}{}".format(self.order, "er" if self.order == 1 else "", ": {}".format(self.nom) if self.nom else "")
 
     @lru_cache
     def get_dispositions(self):
-        return list(chain(*[
-            dispositions_abrogatoires.query.filter_by(article_id=self.id).all(),
-            dispositions_autres.query.filter_by(article_id=self.id).all()
+        return list(chain.from_iterable([
+            map(
+                lambda d: ("disposition_abrogatoire", d), 
+                dispositions_abrogatoires.query.filter_by(article_id=self.id).all()
+            ),
+            map(
+                lambda d: ("disposition_autre", d), 
+                dispositions_autres.query.filter_by(article_id=self.id).all()
+            )
         ]))
-
-    def get_contenu(self):
-        list(map(str, self.get_dispositions())).join("\n\n")
 
 class dispositions_autres(db.Model):
     id = db.Column('id', db.Integer, primary_key = True)   
@@ -122,9 +147,9 @@ class dispositions_abrogatoires(db.Model):
 
     def __str__(self):
         if self.articles:
-            "Les dispositions prévues aux articles {} de l'{} sont abrogées."
+            return "Les articles {} de l'{} sont abrogées.".format(self.articles, self.nom_arrete)
         else:
-            "Les dispositions prévues de l'{} sont abrogées."
+            return "L'{} est abrogé.".format(self.nom_arrete)
 
 class inspections_arretes_rel(db.Model):
     id = db.Column('id', db.Integer, primary_key = True)
@@ -167,6 +192,14 @@ class inspections(db.Model):
     def verificateur_est_approbateur(self):
         return self.verificateur_id == self.approbateur_id
 
+    def iter_annexes(self):
+        for arrete in arretes_inspections_rels.iter_by_inspection(self.id):
+            yield ('arrete', arrete)
+
+    @lru_cache
+    def get_annexes(self):
+        return list(self.iter_annexes())
+
     @lru_cache
     def controles_susceptibles_de_suites(self):
         return list(
@@ -191,7 +224,7 @@ class inspections(db.Model):
             chain.from_iterable(map(lambda ctrl: ctrl.demandes_exploitant(), self.controles))
         )
 
-class insp_controles(db.Model):
+class controles(db.Model):
     id = db.Column('id', db.Integer, primary_key = True)
     insp_id = db.Column(db.Integer, db.ForeignKey('inspections.id', ondelete='CASCADE'), nullable=False)
     inspection = db.relationship('inspections', backref=db.backref('controles', lazy=True))
@@ -217,10 +250,10 @@ class insp_controles(db.Model):
     def propositions_de_suites(self):
         return "Sans objet"
 
-class insp_controles_demandes_exploitant(db.Model):
+class controles_demandes_exploitant_rels(db.Model):
     id = db.Column('id', db.Integer, primary_key=True)
-    ctrl_id = db.Column(db.Integer, db.ForeignKey('insp_controles.id', ondelete='CASCADE'), nullable=False)
-    ctrl = db.relationship('insp_controles', backref=db.backref('demande_exploitant_rels', lazy=True))
+    ctrl_id = db.Column(db.Integer, db.ForeignKey('controles.id', ondelete='CASCADE'), nullable=False)
+    ctrl = db.relationship('controles', backref=db.backref('demande_exploitant_rels', lazy=True))
     demande_exploitant_id = db.Column(db.Integer, db.ForeignKey('demandes_exploitant.id', ondelete='CASCADE'), nullable=False)
     demande_exploitant = db.relationship('demandes_exploitant')
 

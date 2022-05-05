@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% from "inspections/_display_annexe.html" import display_annexe %}
+
+
+{% block content %}
+<div class="fr-container">
+    <h1>{{inspection.nom}}du {{inspection.date.strftime("%d/%m/%Y")}} de {{inspection.aiot.nom}}</h1>
+    <a class=fr-btn href={{url_for('edit_inspection', id=inspection.id)}}>Modifier</a>
+    <a class=fr-btn href={{url_for('generate_inspection_be_exploitant', id=inspection.id)}}>Générer BE Exploitant</a>
+    <a class=fr-btn href={{url_for('generate_inspection_rapport', id=inspection.id)}}>Générer rapport</a>
+    
+    <div class="fr-table">
+        <table>
+            <tr>
+                <td>Rédacteur</td>
+                <td>{{inspection.redacteur.fullname()}}</td>
+            </tr>
+            {% if inspection.approbateur == inspection.verificateur %}
+            <tr>
+                <td>Vérificateur/Approbateur</td>
+                <td>{{inspection.verificateur.fullname()}}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td>Vérificateur</td>
+                <td>{{inspection.verificateur.fullname()}}</td>
+            </tr>
+            <tr>
+                <td>Approbateur</td>
+                <td>{{inspection.approbateur.fullname()}}</td>
+            </tr>
+            {% endif %}
+        </table>
+    </div>
+    
+    <div class="fr-tabs">
+        <ul class="fr-tabs__list" role="tablist" aria-label="[A modifier | nom du système d'onglet]">
+            <li role="presentation">
+                <button id="tabpanel-404" class="fr-tabs__tab" tabindex="0" role="tab" aria-selected="true" aria-controls="tabpanel-404-panel">Propositions à l'issue de la visite</button>
+            </li>
+            <li role="presentation">
+                <button id="tabpanel-405" class="fr-tabs__tab" tabindex="-1" role="tab" aria-selected="false" aria-controls="tabpanel-405-panel">Synthèse des constats</button>
+            </li>
+            <li role="presentation">
+                <button id="tabpanel-406" class="fr-tabs__tab" tabindex="-1" role="tab" aria-selected="false" aria-controls="tabpanel-406-panel">Constats</button>
+            </li>
+            <li role="Arrêtés">
+                <button id="tabpanel-406" class="fr-tabs__tab" tabindex="-1" role="tab" aria-selected="false" aria-controls="tabpanel-407-panel">Arrêtés</button>
+            </li>
+        </ul>
+        <div id="tabpanel-404-panel" class="fr-tabs__panel fr-tabs__panel--selected" role="tabpanel" aria-labelledby="tabpanel-404" tabindex="0">
+            <h1>Propositions à l'issue de la visite</h1>
+            <p>A l'issue de la visite d'inspection du {{ inspection.formatted_date() }} de l'établissement {{ aiot.nom }} sis {{ aiot.fullvoie() }} à {{ aiot.commune }}, 
+            les constats établis et explicités dans la partie "contexte et constats" du rapport amènent 
+            l’inspection des installations classées à formuler à la préfète les propositions suivantes.</p>
+                
+            {% if inspection.synthese_proposition %}
+            <p>
+                {{ inspection.synthese_proposition | nl2br }}
+            </p>
+            {% endif %}
+            {% if inspection.demandes_exploitant() %}
+            <p>
+            Considérant les non-conformités relevées et les enjeux associés, conformément à l’article L.⁠171‑8‑I du code de l’environnement, il a été demandé à l’exploitant de :
+            <ul>
+                {% for demande in inspection.demandes_exploitant() %}
+                <li>{{demande}}</li>
+                {% endfor %}
+            </ul>
+            </p>
+            <p>
+            En l'absence de réponses dans les délais impartis, l'inspection des installations classées 
+            propose à la préfète du Val-de-Marne de mettre en demeure l'exploitant.</p>
+            {% endif %}
+            <p>
+                Conformément aux articles L.171-6 et L.514-5 du code de l’environnement, une copie du présent rapport 
+                est transmise par l'inspection des installations classées à l’exploitant.
+            </p>
+        </div>
+        <div id="tabpanel-405-panel" class="fr-tabs__panel" role="tabpanel" aria-labelledby="tabpanel-405" tabindex="0">
+            <h1>Synthèse des constats</h1>
+            {% if inspection.synthese_constats %}
+                <p>{{ inspection.synthese_constats | nl2br }}</p>
+            {% endif %}
+            {% if inspection.demandes_exploitant() %}
+                <p>
+                    En conséquence, l’inspection des installations classées a demandé à l’exploitant :
+                        <ul>
+                        {% for demande in inspection.demandes_exploitant() %}
+                            <li>{{demande}}</li>
+                        {% endfor %}
+                        </ul>
+                </p>
+                <p>En l'absence de réponses, l'exploitant est susceptible d'être mis en demeure.</p>
+            {% endif %}
+        </div>
+        <div id="tabpanel-406-panel" class="fr-tabs__panel" role="tabpanel" aria-labelledby="tabpanel-406" tabindex="0">
+            {% if inspection.controles %}
+            <p>
+                <a class="fr-btn" href={{url_for('create_controle', inspection_id=inspection.id)}}>
+                    Ajouter
+                </a>
+            </p>
+            {% for ctrl_nb, controle in enumerate(inspection.controles) %}
+                <section class="fr-accordion">
+                    <h3 class="fr-accordion__title">
+                        <button class="fr-accordion__btn" aria-expanded="false" aria-controls="controle-{{controle.id}}">
+                            {% if not controle.constats %}<p class="fr-badge fr-badge--warning">Incomplet</p>{% endif %}{{ controle.nom }}
+                        </button>
+                    </h3>
+                    <div class="fr-collapse" id="controle-{{controle.id}}">
+                        <h1>{{ controle.nom }} </h1>
+                        <p>{{ controle.source }}{% if controle.date_source %} du {{ controle.date_source.strftime("%d/%m/%Y") }}{% endif %}, {{controle.article_source}}</p>
+                        <p>
+                            <a class="fr-btn" href={{url_for("edit_controle", id=controle.id)}}>Modifier</a>
+                            <a class="fr-btn" href={{url_for("delete_controle", id=controle.id)}}>Supprimer</a>
+                        </p>
+                        <h3>Prescription</h3>
+                        <p>{{ controle.prescription | nl2br }}</p>
+                        <h3>Constats</h3>
+                        <p>{{ controle.constats | nl2br }}</p>
+            
+                        <h4>Demandes à l'exploitant</h4>
+                        <a href={{url_for('create_demande_exploitant', controle_id=controle.id, next=url_for('show_inspection', id=inspection.id))}}>Créer demande à l'exploitant</a>
+                        {% if controle.demandes_exploitant() %}
+                            <p>
+                            Il est demandé à l'exploitant de:
+                                <ul>
+                                {% for demande in controle.demandes_exploitant() %}
+                                    <li>{{demande}} <a href={{url_for('delete_demande_exploitant', id=demande.id, next=url_for('show_inspection', id=inspection.id))}}>[Supprimer]</a></li>
+                                {% endfor %}
+                                </ul>
+                            </p>
+                        {% endif %}
+                    </div>
+                </section>
+            {% endfor %}
+            {% else %}
+            <a href={{url_for('create_controle', inspection_id=inspection.id)}}>Créer point de contrôle</a>
+            {% endif %}
+        </div>
+        <div id="tabpanel-407-panel" class="fr-tabs__panel" role="tabpanel" aria-labelledby="tabpanel-407" tabindex="0">
+            <a class="fr-btn" href="{{url_for('create_arrete', aiot_id=inspection.aiot.id, inspection_id=inspection.id)}}">
+                Créer
+            </a>
+
+            {% for type_annexe, annexe in inspection.get_annexes() %}
+                {{ display_annexe(type_annexe, annexe) }}
+              {% endfor %}
+        </div>
+    </div>
+
+
+
+
+
+</div>
+{% endblock %}

@@ -1,8 +1,8 @@
 {% extends "base.html" %}
-{% from "_form_aiot.html" import render_form %}
+{% from "aiots/_form.html" import render_form %}
 
 {% block content %}
-<div class="container">
+<div class="fr-container">
   <form method=post>
     {{ render_form(form) }}
     <input type=submit class="button is-primary" value="Modifier">

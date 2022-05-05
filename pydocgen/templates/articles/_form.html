@@ -2,6 +2,6 @@
 
 {% macro render_form(form) %}
 {{ form.csrf_token }}
+{{ render_field(form.order) }}
 {{ render_field(form.nom) }}
-{{ render_field(form.nature) }}
 {% endmacro %}

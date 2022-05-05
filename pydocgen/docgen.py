@@ -22,9 +22,24 @@ def odt_engine():
     environment.filters['pad'] = pad_string
     environment.globals['SafeValue'] = Markup
     environment.globals['enumerate'] = enumerate
+    environment.globals['len'] = len
+    environment.filters['formatted_date'] = lambda d: d.strftime("%d/%m/%y")
 
     engine = Renderer(environment)
     return engine
+
+def generate_arrete(arrete):
+    stream = io.BytesIO()
+       
+    engine = odt_engine()
+
+    tpl = os.path.join(current_app.instance_path, "modeles", "arrete.odt")
+    
+    doc = engine.render(tpl, arrete=arrete)
+
+    stream.write(doc)
+    stream.seek(0)
+    return stream   
 
 def generate_reponse_avis_pc(**kwargs):
     stream = io.BytesIO()

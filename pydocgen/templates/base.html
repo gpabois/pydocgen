@@ -45,6 +45,7 @@
     {% block content %}
     {% endblock %}
 
+    <script type="module" src="{{ url_for('static', filename='jquery-3.6.0.min.js') }}"></script>
     <script type="module" src="{{ url_for('static', filename='dsfr.module.min.js') }}"></script>
     <script type="text/javascript" nomodule src="{{ url_for('static', filename='dsfr.nomodule.min.js') }}"></script>
 </body>

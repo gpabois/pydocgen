@@ -1,0 +1,11 @@
+{% from "_form_helpers.html" import render_field %}
+
+{% macro render_form(form) %}
+{{ form.csrf_token }}
+{{ render_field(form.nature) }}
+{{ render_field(form.aiot_id) }}
+{{ render_field(form.visas) }}
+{{ render_field(form.considerants) }}
+
+<script type="module" src="{{ url_for('static', filename='arretes/form.js') }}"></script>
+{% endmacro %}
