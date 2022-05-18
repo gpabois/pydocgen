@@ -27,6 +27,10 @@
             </tr>
         </table>
     </div>
+    <h2>Régimes</h2>
+    <p><a href={{url_for('create_regime', aiot_id=aiot.id)}}>Ajouter</a></p>
+    {% for regime in aiot.regimes %}
+    {% endfor %}
     <h2>Synthèse</h2>
     <p>
         {{ aiot.synthese | nl2br }}

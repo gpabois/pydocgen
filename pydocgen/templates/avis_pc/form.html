@@ -1,7 +1,7 @@
 {% from "_form_helpers.html" import render_field %}
 {% extends "base.html" %}
 {% block content %}
-<div class="container">
+<div class="fr-container">
     <form method=post>
         {{ form.csrf_token }}
       {{ render_field(form.date_envoi )}}
@@ -13,7 +13,9 @@
       {{ render_field(form.status_pj)}}
       {{ render_field(form.explication_status_pj)}}
       {{ render_field(form.avis) }}
-      <input type=submit class="button is-primary" value="Créer">
+      <p>
+        <input type=submit class="fr-btn button is-primary" value="Créer">
+      </p>
     </form>
   </div>
 {% endblock %}

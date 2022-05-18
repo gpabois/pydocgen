@@ -57,11 +57,24 @@ class aiots(db.Model):
     def formatted_voie(self):
         return self.fullvoie()
 
+    def site_address(self):
+        return self.fullvoie() + "\n" + self.code_postal + " " + self.commune
+
     def fullvoie(self):
         if self.numero_voie:
             return "{} {}".format(self.numero_voie, self.voie)
         else:
             return self.voie
+
+class regimes(db.Model):
+    id = db.Column('id', db.Integer, primary_key = True)
+    aiot_id = db.Column(db.Integer, db.ForeignKey('aiots.id', ondelete='CASCADE'), nullable=False)
+    aiot = db.relationship('aiots', backref=db.backref('regimes', lazy=True)) 
+    code = db.Column(db.String(255))
+    nature = db.Column(db.String(255))
+    declare_le = db.Column(db.Date, nullable=False)
+    cessation_le = db.Column(db.Date, nullable=False)   
+    parametres = db.Column(db.Text)
 
 class arretes_inspections_rels(db.Model):
     id = db.Column('id', db.Integer, primary_key = True)    

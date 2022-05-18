@@ -34,21 +34,33 @@ class CreateUserForm(FlaskForm):
     reference = StringField('reference')
     email = StringField('email', validators=[InputRequired(), Email()])
 
-class CreateAiotForm(FlaskForm):
-    nom = StringField('nom', validators=[InputRequired()])
-    numero_voie = StringField('numero_voie', validators=[Optional()])
-    voie = StringField('voie', validators=[Optional()])
-    code_postal = StringField('code_postal', validators=[Optional()])
-    commune = StringField('commune', validators=[InputRequired()])
-    email = StringField("email", validators=[Optional(), Email()])
-    regime = SelectField("regime", choices=["Autorisation", "Enregistrement", "Déclaration"])
+class AiotForm(FlaskForm):
+    nom = StringField('Nom', validators=[InputRequired()])
+    numero_voie = StringField('Numéro de voie', validators=[Optional()])
+    voie = StringField('Voie', validators=[Optional()])
+    code_postal = StringField('Code postal', validators=[Optional()])
+    commune = StringField('Commune', validators=[InputRequired()])
+    email = StringField("Email", validators=[Optional(), Email()])
+    regime = SelectField("Regime", choices=["Autorisation", "Enregistrement", "Déclaration"])
     ied = BooleanField("ied")
     code = StringField("code")
     synthese = TextAreaField("synthese")
 
-EditAiotForm = CreateAiotForm
+CreateAiotForm = AiotForm
+EditAiotForm = AiotForm
 
-class CreateInspectionForm(FlaskForm):
+class RegimeForm(FlaskForm):
+    aiot_id = SelectField('AIOT', coerce=int, validators=[InputRequired()])
+    code = StringField('Code', validators=[InputRequired()]) 
+    nature = SelectField("Nature", choices=["A", "E", "D", "DC"])
+    parametres = TextAreaField("Paramètres")
+    declare_le = DateField("Déclaré le")
+    cessation_le = DateField("Cessation le")
+
+CreateRegimeForm = RegimeForm
+EditRegimeForm = RegimeForm
+
+class InspectionForm(FlaskForm):
     nom = StringField('Nom', validators=[InputRequired()])
     date = DateField ('Date', validators=[InputRequired()])
     aiot_id = SelectField('AIOT', coerce=int, validators=[InputRequired()])
@@ -61,10 +73,11 @@ class CreateInspectionForm(FlaskForm):
 
     contexte = TextAreaField("Contexte")
     themes = TextAreaField("Thémes")
-    
-EditInspectionForm = CreateInspectionForm
 
-class CreateControleInspForm(FlaskForm):
+CreateInspectionForm = InspectionForm
+EditInspectionForm = InspectionForm
+
+class ControleForm(FlaskForm):
     nom = StringField("nom")
     source = SelectField('source', choices=['Arrêté préfectoral', 'Code de l\'environnement'], validators=[InputRequired()])
     date_source = DateField('date_source', validators=[Optional()])
@@ -74,12 +87,15 @@ class CreateControleInspForm(FlaskForm):
     prescription = TextAreaField('prescription', validators=[InputRequired()])
     constats = TextAreaField('constats', validators=[Optional()])
 
-EditControleInspForm = CreateControleInspForm
+CreateControleForm = ControleForm
+EditControleForm = ControleForm
 
-class CreateDemandeExploitant(FlaskForm):
+class DemandeExploitant(FlaskForm):
     delai       = StringField('délai', validators=[InputRequired()])
     unite_delai = SelectField('unité_délai', choices=["jours", "mois"], validators=[InputRequired()])
     contenu     = TextAreaField("contenu")
+
+CreateDemandeExploitant = DemandeExploitant
 
 class ReponseAvisPCForm(FlaskForm):
     date_envoi = DateField("Date d'envoi")

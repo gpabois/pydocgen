@@ -1,19 +1,28 @@
 from flask import Flask, session
 from flask_login import login_user, login_required, logout_user, current_user
 
-from .forms  import LoginForm, RegisterUserForm, CreateAiotForm, CreateInspectionForm, CreateControleInspForm
+from .forms  import LoginForm, RegisterUserForm, CreateInspectionForm, CreateControleForm
 from .forms  import CreateUserForm, CreateDemandeExploitant
-from .forms  import EditInspectionForm, EditControleInspForm, EditAiotForm
+from .forms  import EditInspectionForm, EditControleForm
 from .forms import ReponseAvisPCForm
 
-from .models import db, users, aiots
+from .models import db, users
 from .models import demandes_exploitant
 
+from .models import aiots
+from .forms import CreateAiotForm, EditAiotForm
+
 from .models import inspections, controles, controles_demandes_exploitant_rels
+
 from .models import arretes, arretes_inspections_rels
 from .forms import CreateArreteForm, EditArreteForm
+
+from .models import regimes
+from .forms import CreateRegimeForm, EditRegimeForm
+
 from .models import articles
 from .forms  import CreateArticleForm, EditArticleForm
+
 from .models import dispositions_autres, dispositions_abrogatoires
 from .forms import CreateDispositionAbrogatoireForm, EditDispositionAbrogatoireForm
 from .forms import CreateDispositionAutreForm, EditDispositionAutreForm
@@ -126,6 +135,7 @@ def init_app(app):
         
         if form.validate_on_submit():
             aiot = aiots(form.nom.data, form.numero_voie.data, form.voie.data, form.code_postal.data, form.commune.data)
+            form.populate_obj(aiot)
             db.session.add(aiot)
             db.session.commit()
 
@@ -145,6 +155,25 @@ def init_app(app):
             return redirect(url_for('show_aiot', id=aiot.id))
 
         return render_template('aiots/edit.html', form=form)
+
+    @app.route('/regimes/nouveau', methods=['GET', 'POST'])
+    def create_regime():
+        form = CreateRegimeForm()
+       
+        form.aiot_id.choices = list(map(lambda aiot: (aiot.id, aiot.nom), aiots.query.all()))
+        
+        if request.args.get('aiot_id'):
+            aiot_id = request.args.get('aiot_id')
+            form.aiot_id.data = aiot_id
+        
+        if form.validate_on_submit():
+            regime = regimes()
+            form.populate_obj(regime)
+            db.session.add(regime)
+            db.session.commit()
+            return redirect(url_for('show_aiot', id=regime.aiot_id))
+        
+        return render_template("regimes/create.html", form=form)
 
     @app.route('/inspections/<int:id>/edit', methods=['GET', 'POST'])    
     def edit_inspection(id):
@@ -224,7 +253,7 @@ def init_app(app):
 
     @app.route('/inspections/<int:inspection_id>/controles/nouveau', methods=['GET', 'POST'])
     def create_controle(inspection_id):
-        form = CreateControleInspForm()
+        form = CreateControleForm()
 
         if form.validate_on_submit():
             controle = controles()
@@ -239,7 +268,7 @@ def init_app(app):
     @app.route('/inspections/controles/<int:id>/edit', methods=['GET', 'POST'])
     def edit_controle(id):
         controle = controles.query.get(id)
-        form = EditControleInspForm(obj=controle)
+        form = EditControleForm(obj=controle)
         
         if form.validate_on_submit():
             form.populate_obj(controle)
@@ -306,6 +335,7 @@ def init_app(app):
 
         if form.validate():
             args = {}
+            
             for field in form:
                 args[field.name] = field.data
 
